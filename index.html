@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Nov 15 Vault" />
+  <title>Nov 15 Vault</title>
+  <style>
+    :root {
+      --bg: #090d16;
+      --card: #151c2c;
+      --border: #263147;
+      --text: #f8fafc;
+      --muted: #8b9bb4;
+      --green: #22c55e;
+      --red: #ef4444;
+      --amber: #f59e0b;
+      --blue: #38bdf8;
+    }
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      margin: 0;
+      padding: calc(env(safe-area-inset-top) + 12px) 14px calc(env(safe-area-inset-bottom) + 80px) 14px;
+    }
+    .sticky-top {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      background: rgba(9, 13, 22, 0.92);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      padding: 8px 0 12px 0;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 14px;
+    }
+    .title-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+    .title-bar h1 { font-size: 1.15rem; margin: 0; font-weight: 700; }
+    .pill { font-size: 0.72rem; background: #064e3b; color: #6ee7b7; padding: 4px 9px; border-radius: 99px; font-weight: 600; }
+    .kpi-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+    .kpi-box { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 10px; }
+    .kpi-lbl { font-size: 0.65rem; color: var(--muted); text-transform: uppercase; font-weight: 600; }
+    .kpi-val { font-size: 1.12rem; font-weight: 800; margin-top: 3px; }
+    .filter-bar { display: flex; gap: 8px; margin-bottom: 12px; }
+    .filter-bar button {
+      flex: 1;
+      background: var(--card);
+      color: var(--text);
+      border: 1px solid var(--border);
+      padding: 9px;
+      border-radius: 8px;
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+    .filter-bar button.active { border-color: var(--blue); color: var(--blue); }
+    .day-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 13px;
+      margin-bottom: 10px;
+    }
+    .day-card.done { border-color: rgba(34, 197, 94, 0.45); background: rgba(21, 28, 44, 0.65); }
+    .card-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+    .date-title { font-weight: 700; font-size: 0.98rem; display: flex; align-items: center; gap: 8px; }
+    .date-title input[type="checkbox"] { width: 20px; height: 20px; accent-color: var(--green); }
+    .bal-badge { font-size: 0.85rem; font-weight: 700; }
+    .bill-banner {
+      background: rgba(239, 68, 68, 0.14);
+      border: 1px solid rgba(239, 68, 68, 0.35);
+      color: #fca5a5;
+      padding: 6px 10px;
+      border-radius: 7px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      margin-bottom: 10px;
+      display: flex;
+      justify-content: space-between;
+    }
+    .inputs-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+    .inp-group label { display: block; font-size: 0.68rem; color: var(--muted); margin-bottom: 4px; }
+    .inp-group input {
+      width: 100%;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 8px;
+      border-radius: 7px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      text-align: center;
+    }
+    .quick-actions { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; padding-top: 8px; border-top: 1px solid var(--border); font-size: 0.76rem; color: var(--muted); }
+    .zero-btn {
+      background: #1e293b;
+      color: var(--blue);
+      border: 1px solid var(--border);
+      padding: 5px 10px;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+    .pos { color: var(--green); }
+    .neg { color: var(--red); }
+    .warn { color: var(--amber); }
+  </style>
+</head>
+<body>
+
+  <div class="sticky-top">
+    <div class="title-bar">
+      <h1>Nov 15 GTA 6 & Bills Vault</h1>
+      <span class="pill" id="save-pill">Saved</span>
+    </div>
+    <div class="kpi-row">
+      <div class="kpi-box">
+        <div class="kpi-lbl">Nov 15 Spendable</div>
+        <div class="kpi-val pos" id="kpi-spendable">$1,917</div>
+      </div>
+      <div class="kpi-box">
+        <div class="kpi-lbl">$11/d Rollover</div>
+        <div class="kpi-val pos" id="kpi-rollover">+$0.00</div>
+      </div>
+      <div class="kpi-box">
+        <div class="kpi-lbl">Plan Variance</div>
+        <div class="kpi-val" id="kpi-var">+$0.00</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="filter-bar">
+    <button id="btn-pending" class="active" onclick="setFilter('pending')">Remaining Days</button>
+    <button id="btn-all" onclick="setFilter('all')">All 44 Days</button>
+    <button onclick="resetData()">Reset</button>
+  </div>
+
+  <div id="cards-container"></div>
+
+  <script>
+    const KEY = "iphone_nov15_vault_v1";
+    const START_CASH = 1720.00;
+    const NOV18_NVCC = 345.71;
+    const CAP = 11.00;
+    let filterMode = "pending";
+
+    function initDays() {
+      const start = new Date(2026, 9, 3);
+      const names = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+      const bills = {
+        "2026-10-03": { amt: 800.00, name: "October Rent" },
+        "2026-10-05": { amt: 345.71, name: "NVCC Payment #1" },
+        "2026-10-15": { amt: 791.10, name: "Capital One Card" },
+        "2026-10-19": { amt: 345.71, name: "NVCC Payment #2" },
+        "2026-11-01": { amt: 800.00, name: "November Rent" },
+        "2026-11-03": { amt: 345.71, name: "NVCC Payment #3" }
+      };
+      const sbux = { "2026-10-16": 445, "2026-10-30": 980, "2026-11-13": 1080 };
+      const dd = {
+        "2026-10-03": 100, "2026-10-04": 100, "2026-10-08": 75, "2026-10-09": 75,
+        "2026-10-10": 100, "2026-10-11": 100, "2026-10-15": 75, "2026-10-16": 75,
+        "2026-10-17": 90,  "2026-10-18": 90,  "2026-10-22": 60, "2026-10-23": 60,
+        "2026-10-24": 90,  "2026-10-25": 90,  "2026-10-29": 60, "2026-10-30": 60,
+        "2026-10-31": 90,  "2026-11-01": 90,  "2026-11-05": 60, "2026-11-06": 60,
+        "2026-11-07": 90,  "2026-11-08": 90,  "2026-11-13": 50, "2026-11-14": 60, "2026-11-15": 60
+      };
+
+      const arr = [];
+      for (let i = 0; i < 44; i++) {
+        const d = new Date(start);
+        d.setDate(start.getDate() + i);
+        const iso = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+        const b = bills[iso] || { amt: 0, name: "" };
+        arr.push({
+          iso,
+          label: `${names[d.getDay()]}, Oct ${d.getDate()}`.replace("Oct 32", "Nov 1").replace(/Oct (\d+)/, (_, n) => d.getMonth() === 10 ? `Nov ${d.getDate()}` : `Oct ${d.getDate()}`),
+          done: false,
+          billName: b.name,
+          bill: b.amt,
+          pSbux: sbux[iso] || 0,
+          aSbux: sbux[iso] || 0,
+          pDd: dd[iso] || 0,
+          aDd: dd[iso] || 0,
+          pSpend: CAP,
+          aSpend: CAP
+        });
+      }
+      return arr;
+    }
+
+    let days = JSON.parse(localStorage.getItem(KEY)) || initDays();
+
+    function fmt(n) {
+      return (n < 0 ? "-$" : "$") + Math.abs(n).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    function save() {
+      localStorage.setItem(KEY, JSON.stringify(days));
+      const p = document.getElementById("save-pill");
+      p.textContent = "Saved ✓";
+    }
+
+    function upd(i, field, val) {
+      days[i][field] = field === "done" ? Boolean(val) : (parseFloat(val) || 0);
+      save();
+      render();
+    }
+
+    function zeroSpendDay(i) {
+      days[i].aSpend = 0;
+      days[i].done = true;
+      save();
+      render();
+    }
+
+    function setFilter(m) {
+      filterMode = m;
+      document.getElementById("btn-pending").className = m === "pending" ? "active" : "";
+      document.getElementById("btn-all").className = m === "all" ? "active" : "";
+      render();
+    }
+
+    function resetData() {
+      if (!confirm("Reset all 44 days to baseline?")) return;
+      days = initDays();
+      save();
+      render();
+    }
+
+    function render() {
+      const box = document.getElementById("cards-container");
+      box.innerHTML = "";
+      let bal = START_CASH;
+      let planBal = START_CASH;
+      let rollover = 0;
+
+      days.forEach((d, i) => {
+        bal += (d.aSbux + d.aDd - d.bill - d.aSpend);
+        planBal += (d.pSbux + d.pDd - d.bill - d.pSpend);
+        rollover += (d.pSpend - d.aSpend);
+
+        if (filterMode === "pending" && d.done) return;
+
+        const card = document.createElement("div");
+        card.className = "day-card" + (d.done ? " done" : "");
+        const balCls = bal < 0 ? "neg" : (bal < 400 ? "warn" : "pos");
+        const rollCls = rollover >= 0 ? "pos" : "neg";
+
+        card.innerHTML = `
+          <div class="card-head">
+            <label class="date-title">
+              <input type="checkbox" ${d.done ? "checked" : ""} onchange="upd(${i}, 'done', this.checked)" />
+              ${d.label}
+            </label>
+            <span class="bal-badge ${balCls}">Bank: ${fmt(bal)}</span>
+          </div>
+          ${d.bill > 0 ? `<div class="bill-banner"><span>${d.billName}</span><span>-${fmt(d.bill)}</span></div>` : ""}
+          <div class="inputs-grid">
+            <div class="inp-group">
+              <label>Spend ($11 cap)</label>
+              <input type="number" inputmode="decimal" value="${d.aSpend}" onchange="upd(${i}, 'aSpend', this.value)" />
+            </div>
+            <div class="inp-group">
+              <label>DoorDash Net</label>
+              <input type="number" inputmode="decimal" value="${d.aDd}" onchange="upd(${i}, 'aDd', this.value)" />
+            </div>
+            <div class="inp-group">
+              <label>Starbucks Net</label>
+              <input type="number" inputmode="decimal" value="${d.aSbux}" onchange="upd(${i}, 'aSbux', this.value)" />
+            </div>
+          </div>
+          <div class="quick-actions">
+            <span>Cap Rollover: <strong class="${rollCls}">${rollover >= 0 ? "+" : ""}${fmt(rollover)}</strong></span>
+            <button class="zero-btn" onclick="zeroSpendDay(${i})">$0 Spend Today ✓</button>
+          </div>
+        `;
+        box.appendChild(card);
+      });
+
+      const spendable = bal - NOV18_NVCC;
+      const diff = bal - planBal;
+
+      const spEl = document.getElementById("kpi-spendable");
+      spEl.textContent = fmt(spendable);
+      spEl.className = "kpi-val " + (spendable >= 1900 ? "pos" : (spendable >= 450 ? "warn" : "neg"));
+
+      const rlEl = document.getElementById("kpi-rollover");
+      rlEl.textContent = (rollover >= 0 ? "+" : "") + fmt(rollover);
+      rlEl.className = "kpi-val " + (rollover >= 0 ? "pos" : "neg");
+
+      const vrEl = document.getElementById("kpi-var");
+      vrEl.textContent = (diff >= 0 ? "+" : "") + fmt(diff);
+      vrEl.className = "kpi-val " + (diff >= 0 ? "pos" : "neg");
+    }
+
+    render();
+  </script>
+</body>
+</html>
